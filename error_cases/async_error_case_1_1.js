@@ -23,10 +23,13 @@ db.once('open', () => {
             }).then(()=>{
                 console.log('restaurant created')
                 if(user_index >= users.length-1) {
-                    console.log("所有使用者與餐廳資料創建完成")
-                    process.exit()
+                    return Promise.resolve()
                 }
             })
         }
+    }).then(()=>{
+        //等待所有使用者的餐廳資料創建完成
+        console.log("所有使用者與餐廳資料創建完成")
+        process.exit()
     })
 })

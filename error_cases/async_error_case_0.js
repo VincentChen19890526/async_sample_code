@@ -16,6 +16,15 @@ db.once('open', () => {
                     RestaurantModel.create(restaurant)
                 }
             })
+            // restaurants.forEach((restaurant, rest_index)=>{
+            //     if (rest_index >= 0 && rest_index < 3 && user_index === 0) {
+            //         restaurant.userId = user._id
+            //         RestaurantModel.create(restaurant)
+            //     } else if (rest_index >= 3 && rest_index < 6 && user_index === 1) {
+            //         restaurant.userId = user._id
+            //         RestaurantModel.create(restaurant)
+            //     }
+            // })
         }).then(()=>{
             console.log('done')
             if(user_index >= users.length-1) {
