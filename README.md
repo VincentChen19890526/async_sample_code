@@ -12,7 +12,7 @@ Javascript async & sync 機制討論工作坊
 
 * VS code : https://code.visualstudio.com/download
 * Node & npm: https://nodejs.org/en/download/
-* MongoDB Compass: https://www.mongodb.com/products/compass
+* MongoDB Compass: https://www.mongodb.com/products/compass 或 Robo 3T: https://robomongo.org/
 
 ### Installing
 
