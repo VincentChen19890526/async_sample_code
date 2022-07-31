@@ -22,9 +22,13 @@ db.once('open', () => {
                 return RestaurantModel.create(userRestaurant)
             }).then(()=>{
                 console.log('restaurant created')
-                if(user_index >= users.length-1) {
-                    resolve()
-                }
+                UserModel.find().count(function (err, count) {
+                    if (err) console.log(err)
+                    else if (count >= users.length) {
+                        console.log('done')
+                        resolve()
+                    }
+                });
             })
         }
     }).then(()=>{

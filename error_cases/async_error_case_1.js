@@ -22,10 +22,7 @@ db.once('open', () => {
                 return RestaurantModel.create(userRestaurant)
             }).then(()=>{
                 console.log('restaurant created')
-                if(user_index >= users.length-1) {
-                    console.log("所有使用者與餐廳資料創建完成")
-                    process.exit()
-                }
+                process.exit()
             })
         }
     })

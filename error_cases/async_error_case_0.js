@@ -26,10 +26,13 @@ db.once('open', () => {
             //     }
             // })
         }).then(()=>{
-            console.log('done')
-            if(user_index >= users.length-1) {
-                process.exit()
-            }
+            UserModel.find().count(function (err, count) {
+                if (err) console.log(err)
+                else if (count >= users.length) {
+                    console.log('done')
+                    process.exit()
+                }
+            });
         })
     })
 })

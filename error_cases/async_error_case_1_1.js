@@ -22,9 +22,7 @@ db.once('open', () => {
                 return RestaurantModel.create(userRestaurant)
             }).then(()=>{
                 console.log('restaurant created')
-                if(user_index >= users.length-1) {
-                    return Promise.resolve()
-                }
+                return Promise.resolve()
             })
         }
     }).then(()=>{

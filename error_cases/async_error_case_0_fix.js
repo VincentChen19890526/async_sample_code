@@ -18,10 +18,13 @@ db.once('open', () => {
                 }
             })
             RestaurantModel.create(userRestaurant, ()=>{
-                console.log('done')
-                if(user_index >= users.length-1) {
-                  setTimeout(()=>process.exit(), 0)
-                }
+                UserModel.find().count(function (err, count) {
+                    if (err) console.log(err)
+                    else if (count >= users.length) {
+                        console.log('done')
+                        process.exit()
+                    }
+                });
             })
         })
     })
