@@ -1,38 +1,36 @@
-const { users, restaurants }  = require('../data')
-const RestaurantModel = require('../restaurant')
-const UserModel = require('../user')
-const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost/restaurant_list_async_promise_enhance")
-const db = mongoose.connection
-
-// 連接資料庫: db.once('open', callback)
+const { users, orders }  = require('../data')
 // promise是ES6提供來解決callback function造成callback hell的方法，
 // promise all裡面放置一個array，可包含多個promise，
 // 保證所有promise程序都執行完畢後，才會執行promise.all後面的.then的程序
-db.once('open', () => {
-    Promise.all(
-        users.map((user, user_index)=>{
-            //創建使用者資料(user): model.create
-            return UserModel.create({
-                ...user
-            }).then((user)=>{
-                console.log('user created')
-                const userRestaurant = []
-                restaurants.forEach((restaurant, rest_index)=>{
-                    if (rest_index >= 3*user_index && rest_index < 3*(user_index+1)) {
-                        restaurant.userId = user._id
-                        userRestaurant.push(restaurant)
-                    }
-                })
-                //對每個user建立相對應餐廳資料
-                return RestaurantModel.create(userRestaurant)
+Promise.all(
+    users.map((user)=>{
+        //確認每個user即將點餐
+        console.log("客人"+user.name+"-點餐")
+        return new Promise((resolve, _reject)=>{
+            let done = 0
+            orders.forEach((order)=>{
+                //對每個user建立要下訂的餐點
+                if (order.category === user.favorite) {
+                    //開始餐點下單
+                    console.log("下單-"+order.name+":開始烹飪")
+                    new Promise((resolve, _reject)=>{
+                        setTimeout(resolve, order.cooking_time * 100)
+                    }).then(()=>{
+                        //確定餐點完成
+                        console.log(user.name+":"+order.name+"-料理完成")
+                        done += 1
+                        if(done === 3) {
+                            resolve()
+                        }
+                    })
+                }
             })
         })
-    ).then(()=>{
-        //等待所有使用者的餐廳資料創建完成
-        console.log("所有使用者與餐廳資料創建完成")
-        process.exit()
-    }).catch( error => {
-        console.log(error)
     })
+).then(()=>{
+    //等待所有使用者的所有料理結束
+    console.log("所有使用者的所有料理結束")
+    process.exit()
+}).catch( error => {
+    console.log(error)
 })

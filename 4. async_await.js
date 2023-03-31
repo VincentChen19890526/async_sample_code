@@ -1,24 +1,23 @@
-const { users, restaurants }  = require('./data')
-const RestaurantModel = require('./restaurant')
-const UserModel = require('./user')
-const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost/restaurant_list_async_await")
-const db = mongoose.connection
-
-// 連接資料庫: db.once('open', callback)
+const { users, orders }  = require('../data')
+let user_index = 0
 // async await是ES7提供來解決promise閱讀起來還是並非按照從上而下的順序，而包裝promise後設計出來的功能
 // async await可配合promise使用，但必須注意不能混用到.then
-db.once('open', async () => {
-    await Promise.all(
-        users.map( async (user, user_index)=>{
-            //創建使用者資料(user): model.create
-            await UserModel.create(user)
-
-            //對每個user建立相對應餐廳資料
-            await RestaurantModel.create(restaurants)
+async function orders_by_user(user_index) {
+    let user = users[user_index]
+    //確認每個user即將點餐
+    await new Promise((resolve, _reject)=>{
+        orders.forEach(async (order)=>{
+            //對每個user建立要下訂的餐點
+            if (order.category === user.favorite) {
+                //開始餐點下單
+                await setTimeout(()=>{
+                    //確定餐點完成 
+                }, order.cooking_time * 100)
+            }
         })
-    )
-    //等待所有使用者的餐廳資料創建完成
-    console.log("所有使用者與餐廳資料創建完成")
-    process.exit()
-})
+    })
+    user_index ++
+    //確認所有users都下訂完成
+}
+
+orders_by_user(user_index)

@@ -1,35 +1,36 @@
-const { users, restaurants }  = require('../data')
-const RestaurantModel = require('../restaurant')
-const UserModel = require('../user')
-const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost/restaurant_list_async_await")
-const db = mongoose.connection
-
-// 連接資料庫: db.once('open', callback)
+const { users, orders }  = require('../data')
+let user_index = 0
 // async await是ES7提供來解決promise閱讀起來還是並非按照從上而下的順序，而包裝promise後設計出來的功能
 // async await可配合promise使用，但必須注意不能混用到.then
-db.once('open', async () => {
-    await Promise.all(
-        users.map( async (user, user_index)=>{
-            //創建使用者資料(user): model.create
-            const createdUser = await UserModel.create({
-                ...user
-            })
-            console.log('user created')
-
-            //對每個user建立相對應餐廳資料
-            const userRestaurant = []
-            restaurants.forEach((restaurant, rest_index)=>{
-                if (rest_index >= 3*user_index && rest_index < 3*(user_index+1)) {
-                    restaurant.userId = createdUser._id
-                    userRestaurant.push(restaurant)
-                }
-            })
-            await RestaurantModel.create(userRestaurant)
-            console.log('restaurant created')
+async function orders_by_user(user_index) {
+    let user = users[user_index]
+    //確認每個user即將點餐
+    console.log("客人"+user.name+"-點餐")
+    await new Promise((resolve, _reject)=>{
+        let done = 0
+        orders.forEach(async (order)=>{
+            //對每個user建立要下訂的餐點
+            if (order.category === user.favorite) {
+                //開始餐點下單
+                console.log("下單-"+order.name+":開始烹飪")
+                await setTimeout(()=>{
+                    //確定餐點完成
+                    console.log(user.name+":"+order.name+"-料理完成")
+                    done += 1
+                    if(done === 3) {
+                        resolve()
+                    }
+                }, order.cooking_time * 100)
+            }
         })
-    )
-    //等待所有使用者的餐廳資料創建完成
-    console.log("所有使用者與餐廳資料創建完成")
-    process.exit()
-})
+    })
+
+    user_index ++
+    //確認所有users都下訂完成
+    if (user_index === users.length) {
+        console.log("所有料理結束")
+        process.exit()
+    } else await orders_by_user(user_index)
+}
+
+orders_by_user(user_index)

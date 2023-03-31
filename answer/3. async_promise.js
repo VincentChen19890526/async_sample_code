@@ -1,47 +1,44 @@
-const { users, restaurants }  = require('../data')
-const RestaurantModel = require('../restaurant')
-const UserModel = require('../user')
-const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost/restaurant_list_async_promise")
-const db = mongoose.connection
+const { users, orders }  = require('../data')
+let user_index = 0
 
-// 連接資料庫: db.once('open', callback)
 // promise是ES6提供來解決callback function造成callback hell的方法，
 // 被包覆在promise內的function，會保證在呼叫resolve後才會執行.then裡面的程序，
 // 避免callback會一直往下層寫，造成不好閱讀的程式碼
-db.once('open', () => {
-    new Promise((resolve, _reject)=>{
-        for (const [user_index, user] of users.entries()) {
-            //創建使用者資料(user): model.create
-            UserModel.create({
-                ...user
-            }).then((user)=>{
-                console.log('user created')
-                //對每個user建立相對應餐廳資料
-                const userRestaurant = []
-                restaurants.forEach((restaurant, rest_index)=>{
-                    if (rest_index >= 3*user_index && rest_index < 3*(user_index+1)) {
-                        restaurant.userId = user._id
-                        userRestaurant.push(restaurant)
-                    }
-                })
-                return RestaurantModel.create(userRestaurant)
-            }).then(()=>{
-                console.log('restaurant created')
-                // 因為上述使用for loop中所每一次所create的user為非同步的請求，
-                // 因此要在下方使用count函式確認所有users與restaurants都成功create完畢才程式執行結束
-                UserModel.find().count(function (err, count) {
-                    if (err) console.log(err)
-                    else if (count >= users.length) {
-                        console.log('done')
+function orders_by_user(resolve, user_index) {
+    let user = users[user_index]
+    //確認每個user即將點餐
+    console.log("客人"+user.name+"-點餐")
+    return new Promise((resolve, _reject)=>{
+        let done = 0
+        orders.forEach((order)=>{
+            //對每個user建立要下訂的餐點
+            if (order.category === user.favorite) {
+                //開始餐點下單
+                console.log("下單-"+order.name+":開始烹飪")
+                new Promise((resolve, _reject)=>{
+                    setTimeout(resolve, order.cooking_time * 100)
+                }).then(()=>{
+                    //確定餐點完成
+                    console.log(user.name+":"+order.name+"-料理完成")
+                    done += 1
+                    if(done === 3) {
                         resolve()
                     }
-                });
-            })
-        }
+                })
+            }
+        })
     }).then(()=>{
-        //等待所有使用者的餐廳資料創建完成
-        console.log("所有使用者與餐廳資料創建完成")
-        process.exit()
+        user_index ++
+        //確認所有users都下訂完成
+        if (user_index === users.length) {
+            resolve()
+        } else orders_by_user(resolve, user_index)
     })
+}
+
+new Promise((resolve, _reject)=>{
+    return orders_by_user(resolve, user_index)
+}).then(()=>{
+    console.log("所有料理結束")
+    process.exit()
 })
