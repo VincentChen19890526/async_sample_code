@@ -2,7 +2,8 @@ const { users, orders }  = require('../data')
 let user_index = 0
 // async await是ES7提供來解決promise閱讀起來還是並非按照從上而下的順序，而包裝promise後設計出來的功能
 // async await可配合promise使用，但必須注意不能混用到.then
-users.forEach(async (user)=>{
+async function orders_by_user(user_index) {
+    let user = users[user_index]
     //確認每個user即將點餐
     console.log("客人"+user.name+"-點餐")
     await new Promise((resolve, _reject)=>{
@@ -29,5 +30,7 @@ users.forEach(async (user)=>{
     if (user_index === users.length) {
         console.log("所有料理結束")
         process.exit()
-    }
-})
+    } else await orders_by_user(user_index)
+}
+
+orders_by_user(user_index)
